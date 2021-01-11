@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    outputs:
+      files: ${{ steps.get-files.outputs.files }}
+    steps:
+    - uses: actions/checkout@v2
+    - id: get-files
+      run: echo "::set-output name=files::"$(ls files | jq -R -s -c 'split("\n")[:-1]')
+  job2:
+    needs: job1
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        file: ${{fromJson(needs.job1.outputs.files)}}
+    steps:
+    - run: echo ${{ matrix.file }}
